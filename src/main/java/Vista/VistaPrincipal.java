@@ -29,6 +29,8 @@ public class VistaPrincipal extends javax.swing.JFrame
         jMenuBarPrincipal = new javax.swing.JMenuBar();
         jMenuConsultas = new javax.swing.JMenu();
         jMenuItemRealizarConsulta = new javax.swing.JMenuItem();
+        jMenuItemCargarFicheroConsultas = new javax.swing.JMenuItem();
+        jMenuItemGenerarFichero = new javax.swing.JMenuItem();
         jMenuDocumentos = new javax.swing.JMenu();
         jMenuItemIndexar = new javax.swing.JMenuItem();
         jMenuItemMostrarIndexados = new javax.swing.JMenuItem();
@@ -47,6 +49,20 @@ public class VistaPrincipal extends javax.swing.JFrame
         jMenuItemRealizarConsulta.setText("Realizar consulta");
         jMenuItemRealizarConsulta.setActionCommand("RealizarConsulta");
         jMenuConsultas.add(jMenuItemRealizarConsulta);
+
+        jMenuItemCargarFicheroConsultas.setText("Cargar fichero de consultas");
+        jMenuItemCargarFicheroConsultas.setActionCommand("CargarFicheroConsultas");
+        jMenuConsultas.add(jMenuItemCargarFicheroConsultas);
+
+        jMenuItemGenerarFichero.setText("Generar fichero de evaluación");
+        jMenuItemGenerarFichero.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jMenuItemGenerarFicheroActionPerformed(evt);
+            }
+        });
+        jMenuConsultas.add(jMenuItemGenerarFichero);
 
         jMenuBarPrincipal.add(jMenuConsultas);
 
@@ -119,13 +135,20 @@ public class VistaPrincipal extends javax.swing.JFrame
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenuItemDesconectarActionPerformed
 
+    private void jMenuItemGenerarFicheroActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jMenuItemGenerarFicheroActionPerformed
+    {//GEN-HEADEREND:event_jMenuItemGenerarFicheroActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItemGenerarFicheroActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JMenuBar jMenuBarPrincipal;
     public javax.swing.JMenu jMenuConsultas;
     public javax.swing.JMenu jMenuDocumentos;
     private javax.swing.JMenuItem jMenuItem1;
+    public javax.swing.JMenuItem jMenuItemCargarFicheroConsultas;
     public javax.swing.JMenuItem jMenuItemCerrarServidor;
     public javax.swing.JMenuItem jMenuItemDesconectar;
+    public javax.swing.JMenuItem jMenuItemGenerarFichero;
     public javax.swing.JMenuItem jMenuItemIndexar;
     public javax.swing.JMenuItem jMenuItemMostrarIndexados;
     public javax.swing.JMenuItem jMenuItemRealizarConsulta;
