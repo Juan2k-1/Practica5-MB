@@ -38,12 +38,13 @@ public class Documento
         this.score = score;
     }
 
-    public Documento(Long id, String autor, String titulo, String contenido, String persona, String date, String organization, String location, String money)
+    public Documento(Long id, String autor, String titulo, String contenido, Float score, String persona, String date, String organization, String location, String money)
     {
         this.id = id;
         this.autor = autor;
         this.titulo = titulo;
         this.contenido = contenido;
+        this.score = score;
         this.persona = persona;
         this.date = date;
         this.organization = organization;
@@ -54,6 +55,11 @@ public class Documento
     public Long getId()
     {
         return id;
+    }
+
+    public void setId(Long id)
+    {
+        this.id = id;
     }
 
     public String getAutor()
@@ -145,10 +151,10 @@ public class Documento
     {
         this.money = money;
     }
-    
+
     @Override
     public String toString()
     {
-        return "Documento{" + "id=" + id + ", autor=" + autor + ", titulo=" + titulo + ", contenido=" + contenido + '}';
-    }    
+        return "Documento{" + "id=" + id + ", autor=" + autor + ", titulo=" + titulo + ", contenido=" + contenido + ", score=" + score + ", persona=" + persona + ", date=" + date + ", organization=" + organization + ", location=" + location + ", money=" + money + '}';
+    }   
 }

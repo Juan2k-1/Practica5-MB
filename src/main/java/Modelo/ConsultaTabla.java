@@ -47,7 +47,7 @@ public class ConsultaTabla extends DefaultTableModel
     {
         String[] columnasTabla =
         {
-            "Código", "Autor", "Título", "Contenido", "Score"
+            "Código", "Autor", "Título", "Contenido", "Score", "Persona", "Fecha", "Organización", "Localización", "Dinero"
         };
         setColumnIdentifiers(columnasTabla);
     }
@@ -60,7 +60,7 @@ public class ConsultaTabla extends DefaultTableModel
      */
     public void rellenarTablaConsultas(ArrayList<Documento> documentos)
     {
-        Object[] fila = new Object[5];
+        Object[] fila = new Object[10];
         int numRegistros = documentos.size();
         for (int i = 0; i < numRegistros; i++)
         {
@@ -69,6 +69,11 @@ public class ConsultaTabla extends DefaultTableModel
             fila[2] = documentos.get(i).getTitulo();
             fila[3] = documentos.get(i).getContenido();
             fila[4] = documentos.get(i).getScore();
+            fila[5] = documentos.get(i).getPersona();
+            fila[6] = documentos.get(i).getDate();
+            fila[7] = documentos.get(i).getOrganization();
+            fila[8] = documentos.get(i).getLocation();
+            fila[9] = documentos.get(i).getMoney();
             this.addRow(fila);
         }
     }

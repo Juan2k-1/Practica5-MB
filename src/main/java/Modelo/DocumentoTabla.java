@@ -47,7 +47,7 @@ public class DocumentoTabla extends DefaultTableModel
     {
         String[] columnasTabla =
         {
-            "Código", "Autor", "Título", "Contenido"
+            "Código", "Autor", "Título", "Contenido", "Persona", "Fecha", "Organización", "Localización", "Dinero"
         };
         setColumnIdentifiers(columnasTabla);
     }
@@ -60,7 +60,7 @@ public class DocumentoTabla extends DefaultTableModel
      */
     public void rellenarTablaDocumentos(ArrayList<Documento> documentos)
     {
-        Object[] fila = new Object[4];
+        Object[] fila = new Object[9];
         int numRegistros = documentos.size();
         for (int i = 0; i < numRegistros; i++)
         {
@@ -68,6 +68,11 @@ public class DocumentoTabla extends DefaultTableModel
             fila[1] = documentos.get(i).getAutor();
             fila[2] = documentos.get(i).getTitulo();
             fila[3] = documentos.get(i).getContenido();
+            fila[4] = documentos.get(i).getPersona();
+            fila[5] = documentos.get(i).getDate();
+            fila[6] = documentos.get(i).getOrganization();
+            fila[7] = documentos.get(i).getLocation();
+            fila[8] = documentos.get(i).getMoney();
             this.addRow(fila);
         }
     }

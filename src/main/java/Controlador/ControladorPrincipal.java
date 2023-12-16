@@ -12,7 +12,7 @@ import Vista.VistaMensaje;
 import Vista.VistaMostrarDocumentosIndexados;
 import Vista.VistaPorDefecto;
 import Vista.VistaPrincipal;
-import Vista.VistaSeleccionarFichero;
+import Vista.VistaSeleccionarFicheroGate;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,6 +37,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -45,6 +48,11 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class ControladorPrincipal implements ActionListener
 {
@@ -53,7 +61,8 @@ public class ControladorPrincipal implements ActionListener
     private VistaPorDefecto vPorDefecto;
     private VistaPrincipal vPrincipal;
     private VistaIndexarDocumentos vIndexar;
-    private VistaSeleccionarFichero vSeleccionarFichero;
+    //private VistaSeleccionarFichero vSeleccionarFichero;
+    private VistaSeleccionarFicheroGate vSeleccionarFicheroGate;
     private VistaMostrarDocumentosIndexados vDocumentosIndexados;
     private VistaCargarFicheroConsultas vCargarFicheroConsulta;
     private VistaIndexarConsultas vIndexarConsultas;
@@ -75,7 +84,8 @@ public class ControladorPrincipal implements ActionListener
         this.vIndexar = new VistaIndexarDocumentos();
         this.vDocumentosIndexados = new VistaMostrarDocumentosIndexados();
         this.vCargarFicheroConsulta = new VistaCargarFicheroConsultas();
-        this.vSeleccionarFichero = new VistaSeleccionarFichero();
+        //this.vSeleccionarFichero = new VistaSeleccionarFichero();
+        this.vSeleccionarFicheroGate = new VistaSeleccionarFicheroGate();
         this.vIndexarConsultas = new VistaIndexarConsultas();
         this.vConsultas = new VistaConsultas();
         this.dTabla = new DocumentoTabla(vDocumentosIndexados);
@@ -88,7 +98,8 @@ public class ControladorPrincipal implements ActionListener
 
         this.vPrincipal.add(vPorDefecto);
         this.vPrincipal.add(vIndexar);
-        this.vPrincipal.add(vSeleccionarFichero);
+        //this.vPrincipal.add(vSeleccionarFichero);
+        this.vPrincipal.add(vSeleccionarFicheroGate);
         this.vPrincipal.add(vDocumentosIndexados);
         this.vPrincipal.add(vConsultas);
         this.vPrincipal.add(vCargarFicheroConsulta);
@@ -96,7 +107,8 @@ public class ControladorPrincipal implements ActionListener
 
         this.vPorDefecto.setVisible(true);
         this.vIndexar.setVisible(false);
-        this.vSeleccionarFichero.setVisible(false);
+        //this.vSeleccionarFichero.setVisible(false);
+        this.vSeleccionarFicheroGate.setVisible(false);
         this.vDocumentosIndexados.setVisible(false);
         this.vConsultas.setVisible(false);
         this.vCargarFicheroConsulta.setVisible(false);
@@ -120,39 +132,11 @@ public class ControladorPrincipal implements ActionListener
                 this.vPorDefecto.setVisible(false);
                 this.vIndexar.setVisible(false);
                 this.vDocumentosIndexados.setVisible(false);
-                this.vSeleccionarFichero.setVisible(false);
+                this.vSeleccionarFicheroGate.setVisible(false);
                 this.vIndexar.setVisible(true);
                 break;
             }
-            case "SeleccionarFichero":
-            {
-                this.vPorDefecto.setVisible(false);
-                this.vIndexar.setVisible(false);
-                this.vDocumentosIndexados.setVisible(false);
-                this.vSeleccionarFichero.setVisible(true);
-                int seleccion = this.vSeleccionarFichero.jFileChooserFicheros.showOpenDialog(null);
-                if (seleccion == JFileChooser.APPROVE_OPTION)
-                {
-                    File ficheroSeleccionado = this.vSeleccionarFichero.jFileChooserFicheros.getSelectedFile();
-                    String cisiAllFilePath = ficheroSeleccionado.getAbsolutePath();
-                    this.vIndexar.jTextFieldFichero.setText(cisiAllFilePath);
-                    if (cisiAllFilePath == null)
-                    {
-                        this.vMensaje.MensajeDeError("Error, ruta vacía");
-                    } else
-                    {
-                        try
-                        {
-                            this.documentos = indexarDocumentos(solrClient, cisiAllFilePath);
-                            this.vMensaje.MensajeInformacion("¡Documentos indexados con éxito!");
-                        } catch (SolrServerException | IOException ex)
-                        {
-                            Logger.getLogger(ControladorPrincipal.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-                        }
-                    }
-                }
-                break;
-            }
+
             case "MostrarDocumentosIndexados":
             {
                 if (this.documentos == null)
@@ -163,7 +147,7 @@ public class ControladorPrincipal implements ActionListener
                     this.vDocumentosIndexados.setVisible(true);
                     this.vPorDefecto.setVisible(false);
                     this.vIndexar.setVisible(false);
-                    this.vSeleccionarFichero.setVisible(false);
+                    this.vSeleccionarFicheroGate.setVisible(false);
                     this.vDocumentosIndexados.jTableMostrarDocumentos.setModel(dTabla);
                     DiseñoTablaDocumentos();
                     pideDocumentos();
@@ -175,7 +159,7 @@ public class ControladorPrincipal implements ActionListener
                 this.vPorDefecto.setVisible(false);
                 this.vIndexar.setVisible(false);
                 this.vDocumentosIndexados.setVisible(false);
-                this.vSeleccionarFichero.setVisible(false);
+                this.vSeleccionarFicheroGate.setVisible(false);
                 this.vIndexarConsultas.setVisible(true);
                 break;
             }
@@ -184,7 +168,7 @@ public class ControladorPrincipal implements ActionListener
                 this.vPorDefecto.setVisible(false);
                 this.vIndexar.setVisible(false);
                 this.vDocumentosIndexados.setVisible(false);
-                this.vSeleccionarFichero.setVisible(false);
+                this.vSeleccionarFicheroGate.setVisible(false);
                 this.vIndexarConsultas.setVisible(false);
                 this.vCargarFicheroConsulta.setVisible(true);
                 int seleccion = this.vCargarFicheroConsulta.jFileChooserConsultas.showOpenDialog(null);
@@ -260,7 +244,8 @@ public class ControladorPrincipal implements ActionListener
                 this.vDocumentosIndexados.setVisible(false);
                 this.vPorDefecto.setVisible(false);
                 this.vIndexar.setVisible(false);
-                this.vSeleccionarFichero.setVisible(false);
+                this.vSeleccionarFicheroGate.setVisible(false);
+                this.vCargarFicheroConsulta.setVisible(false);
                 this.vConsultas.jTableConsultas.setModel(cTabla);
                 DiseñoTablaConsultas();
                 break;
@@ -308,6 +293,37 @@ public class ControladorPrincipal implements ActionListener
                 System.exit(0);
                 break;
             }
+            case "SeleccionarFicheroGate":
+            {
+                this.vPorDefecto.setVisible(false);
+                this.vIndexar.setVisible(false);
+                this.vDocumentosIndexados.setVisible(false);
+                this.vSeleccionarFicheroGate.setVisible(true);
+                int seleccion = this.vSeleccionarFicheroGate.jFileChooserGate.showOpenDialog(null);
+                if (seleccion == JFileChooser.APPROVE_OPTION)
+                {
+                    File ficheroSeleccionado = this.vSeleccionarFicheroGate.jFileChooserGate.getSelectedFile();
+                    String FilePath = ficheroSeleccionado.getAbsolutePath();
+                    this.vIndexar.jTextFieldFichero.setText(FilePath);
+                    if (FilePath == null)
+                    {
+                        this.vMensaje.MensajeDeError("Error, ruta vacía");
+                    } else
+                    {
+                        try
+                        {
+                            //this.documentos = indexarDocumentos(solrClient, cisiAllFilePath);
+                            this.documentos = convertToSolrFormat(FilePath);
+                            indexToSolr(documentos, solrClient);
+                            this.vMensaje.MensajeInformacion("¡Documentos indexados con éxito!");
+                        } catch (SolrServerException | IOException ex)
+                        {
+                            Logger.getLogger(ControladorPrincipal.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                        }
+                    }
+                }
+                break;
+            }
         }
     }
 
@@ -335,7 +351,7 @@ public class ControladorPrincipal implements ActionListener
         String solrUrl = "http://localhost:8983/solr/" + this.nombreCore;
         SolrClient solrClientmicoleccion = new HttpSolrClient.Builder(solrUrl).build();
         solrQuery.setQuery("content:" + consulta.getContenido());
-        solrQuery.set("fl", "id,author,title,content,score");
+        solrQuery.set("fl", "id,author,title,content,score,person,date,organization,location,money");
 
         solrQuery.setHighlight(true);
         solrQuery.addHighlightField("content");  // Campo que se resaltará
@@ -353,7 +369,32 @@ public class ControladorPrincipal implements ActionListener
             //String content = "<html>" + "<body>" + "<p>" + document.getFieldValue("content").toString() + "</p>" + "</body>" + "</html>";
             String contentHighlight = "<html>" + "<body>" + "<p>" + response.getHighlighting().get(id.toString()).get("content").get(0) + "</p>" + "</body>" + "</html>";
             Float score = (Float) document.getFieldValue("score");
-            Documento documento = new Documento(id, author, title, contentHighlight, score);
+            String persona = (String) document.getFieldValue("person");
+            if (persona == null)
+            {
+                persona = " ";
+            }
+            String fecha = (String) document.getFieldValue("date");
+            if (fecha == null)
+            {
+                fecha = " ";
+            }
+            String organizacion = (String) document.getFieldValue("organization");
+            if (organizacion == null)
+            {
+                organizacion = " ";
+            }
+            String localizacion = (String) document.getFieldValue("location");
+            if (localizacion == null)
+            {
+                localizacion = " ";
+            }
+            String dinero = (String) document.getFieldValue("money");
+            if (dinero == null)
+            {
+                dinero = " ";
+            }
+            Documento documento = new Documento(id, author, title, contentHighlight, score, persona, fecha, organizacion, localizacion, dinero);
             documentos.add(documento);
         }
         solrClientmicoleccion.close();
@@ -373,79 +414,7 @@ public class ControladorPrincipal implements ActionListener
         this.vIndexarConsultas.jButtonSeleccionarFichero.addActionListener(this);
         this.vConsultas.jButtonBuscar.addActionListener(this);
         this.vPrincipal.jMenuItemGenerarFichero.addActionListener(this);
-    }
-
-    private ArrayList<Documento> indexarDocumentos(SolrClient solr, String cisiAllFilePath) throws IOException, SolrServerException
-    {
-        Path pathToDocument = null;
-        BufferedReader br = null;
-
-        pathToDocument = Paths.get(cisiAllFilePath);
-        br = Files.newBufferedReader(pathToDocument.toAbsolutePath());
-
-        String line;
-        String marcaFinTexto = ".X";
-        boolean inDocument = false;
-        String id = null;
-        String title = null;
-        String author = null;
-        StringBuilder content = new StringBuilder();
-        ArrayList<Documento> documents = new ArrayList();
-
-        while ((line = br.readLine()) != null)
-        {
-            if (line.startsWith(".I"))
-            {
-                // Nuevo documento comienza
-                if (inDocument)
-                {
-                    // Si ya estábamos en un documento, enviamos el documento a Solr
-                    SolrInputDocument document = new SolrInputDocument();
-                    document.addField("id", id);
-                    document.addField("title", title);
-                    document.addField("author", author);
-                    document.addField("content", content.toString());
-                    solr.add("CORPUS", document);
-                    Documento documento = new Documento(Long.parseLong(id), author, title, content.toString());
-                    documents.add(documento);
-                }
-                inDocument = true;
-                id = line.substring(3).trim(); // Obtener el ID del documento
-                content.setLength(0); // Limpiar el contenido
-            } else if (line.startsWith(".T"))
-            {
-                // Título del documento
-                title = br.readLine().trim();
-            } else if (line.startsWith(".A"))
-            {
-                // Autor del documento
-                author = br.readLine().trim();
-            } else if (line.startsWith(".W"))
-            {
-                while ((line = br.readLine()) != null && !line.equals(marcaFinTexto))
-                {
-                    content.append(line.trim()).append(" ");
-                }
-            }
-        }
-
-        // Procesamos el último documento 
-        if (inDocument)
-        {
-            SolrInputDocument document = new SolrInputDocument();
-            document.addField("id", id);
-            document.addField("title", title);
-            document.addField("author", author);
-            document.addField("content", content.toString());
-            solr.add("CORPUS", document);
-            Documento documento = new Documento(Long.parseLong(id), author, title, content.toString());
-            documents.add(documento);
-        }
-
-        // Enviar los cambios al servidor Solr
-        solr.commit("CORPUS");
-        br.close();
-        return documents;
+        this.vPrincipal.jMenuItemGate.addActionListener(this);
     }
 
     private Map<Integer, String> indexarConsultas(String filePath) throws IOException
@@ -515,6 +484,11 @@ public class ControladorPrincipal implements ActionListener
         vDocumentosIndexados.jTableMostrarDocumentos.getColumnModel().getColumn(1).setPreferredWidth(90);
         vDocumentosIndexados.jTableMostrarDocumentos.getColumnModel().getColumn(2).setPreferredWidth(90);
         vDocumentosIndexados.jTableMostrarDocumentos.getColumnModel().getColumn(3).setPreferredWidth(1500);
+        vDocumentosIndexados.jTableMostrarDocumentos.getColumnModel().getColumn(4).setPreferredWidth(150);
+        vDocumentosIndexados.jTableMostrarDocumentos.getColumnModel().getColumn(5).setPreferredWidth(150);
+        vDocumentosIndexados.jTableMostrarDocumentos.getColumnModel().getColumn(6).setPreferredWidth(150);
+        vDocumentosIndexados.jTableMostrarDocumentos.getColumnModel().getColumn(7).setPreferredWidth(150);
+        vDocumentosIndexados.jTableMostrarDocumentos.getColumnModel().getColumn(8).setPreferredWidth(90);
     }
 
     /**
@@ -532,6 +506,11 @@ public class ControladorPrincipal implements ActionListener
         vConsultas.jTableConsultas.getColumnModel().getColumn(2).setPreferredWidth(90);
         vConsultas.jTableConsultas.getColumnModel().getColumn(3).setPreferredWidth(1500);
         vConsultas.jTableConsultas.getColumnModel().getColumn(4).setPreferredWidth(90);
+        vConsultas.jTableConsultas.getColumnModel().getColumn(5).setPreferredWidth(150);
+        vConsultas.jTableConsultas.getColumnModel().getColumn(6).setPreferredWidth(150);
+        vConsultas.jTableConsultas.getColumnModel().getColumn(7).setPreferredWidth(150);
+        vConsultas.jTableConsultas.getColumnModel().getColumn(8).setPreferredWidth(150);
+        vConsultas.jTableConsultas.getColumnModel().getColumn(9).setPreferredWidth(90);
     }
 
     /**
@@ -587,13 +566,176 @@ public class ControladorPrincipal implements ActionListener
             {
                 e.printStackTrace();
             }
-            Thread.sleep(5000); // Espera 5 segundos (ajusta según sea necesario)
-            // Esperar a que el proceso termine
+            Thread.sleep(5000);
             int exitCode = process.waitFor();
             System.out.println("Proceso Solr terminado con código de salida: " + exitCode);
         } catch (IOException | InterruptedException e)
         {
             e.printStackTrace();
         }
+    }
+
+    private ArrayList<Documento> convertToSolrFormat(String filePath)
+    {
+        ArrayList<Documento> documentos = new ArrayList<>();
+        try
+        {
+            replaceXMLCharacters();
+            System.out.println(filePath);
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);  // Permitir el manejo de espacios de nombres
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(new File(filePath));
+
+            // Obtener la lista de nodos de documento
+            NodeList documentList = document.getElementsByTagName("document");
+            for (int i = 0; i < documentList.getLength(); i++)
+            {
+                Node documentNode = documentList.item(i);
+                if (documentNode.getNodeType() == Node.ELEMENT_NODE)
+                {
+                    Documento documento = extractEntityInfo((Element) documentNode);
+                    documentos.add(documento);
+                }
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return documentos;
+
+    }
+
+    private Documento extractEntityInfo(Element documentNode)
+    {
+        Documento documento = new Documento();
+
+        // Extraer información de personas
+        List<String> persons = extractElements(documentNode, "Person");
+        if (!persons.isEmpty())
+        {
+            documento.setPersona(String.join(", ", persons));
+        }
+
+        // Extraer información de organizaciones
+        List<String> organizations = extractElements(documentNode, "Organization");
+        if (!organizations.isEmpty())
+        {
+            documento.setOrganization(String.join(", ", organizations));
+        }
+
+        // Extraer información de fechas
+        List<String> dates = extractElements(documentNode, "Date");
+        if (!dates.isEmpty())
+        {
+            documento.setDate(String.join(", ", dates));
+        }
+
+        // Extraer información de dinero
+        List<String> moneys = extractElements(documentNode, "Money");
+        if (!moneys.isEmpty())
+        {
+            documento.setMoney(String.join(", ", moneys));
+        }
+
+        // Extraer información de localizaciones
+        List<String> locations = extractElements(documentNode, "Location");
+        if (!locations.isEmpty())
+        {
+            documento.setLocation(String.join(", ", locations));
+        }
+
+        // Extraer información adicional del documento
+        NodeList fieldList = documentNode.getChildNodes();
+        for (int j = 0; j < fieldList.getLength(); j++)
+        {
+            Node fieldNode = fieldList.item(j);
+            if (fieldNode.getNodeType() == Node.ELEMENT_NODE)
+            {
+                String fieldName = fieldNode.getNodeName();
+                String fieldValue = fieldNode.getTextContent();
+
+                // Establecer valores adicionales en el objeto Documento según el campo
+                switch (fieldName)
+                {
+                    case "id":
+                        documento.setId(Long.parseLong(fieldValue));
+                        break;
+                    case "author":
+                        documento.setAutor(fieldValue);
+                        break;
+                    case "title":
+                        documento.setTitulo(fieldValue);
+                        break;
+                    case "content":
+                        documento.setContenido(fieldValue);
+                        break;
+                }
+            }
+        }
+        return documento;
+    }
+
+    private List<String> extractElements(Element documentNode, String tagName)
+    {
+        List<String> elements = new ArrayList<>();
+        NodeList nodeList = documentNode.getElementsByTagName(tagName);
+
+        for (int i = 0; i < nodeList.getLength(); i++)
+        {
+            Element element = (Element) nodeList.item(i);
+            elements.add(element.getTextContent());
+        }
+
+        return elements;
+    }
+
+    private void replaceXMLCharacters() throws IOException, SAXException, ParserConfigurationException
+    {
+        Path filePath = Paths.get("Corpus.xml");
+        String content = new String(Files.readAllBytes(filePath));
+
+        // Reemplaza las entidades &lt; por <
+        content = content.replace("&lt;", "<");
+
+        // Reemplaza las entidades &gt; por >
+        content = content.replace("&gt;", ">");
+
+        // Escribe el contenido modificado de vuelta al archivo
+        Files.write(filePath, content.getBytes());
+
+        // Crear un objeto File que represente el archivo XML
+        File xmlFile = new File("Corpus.xml");
+
+        // Configurar el analizador de documentos XML
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(xmlFile);
+
+        // Normalizar el documento
+        doc.getDocumentElement().normalize();
+    }
+
+    private void indexToSolr(List<Documento> documentos, SolrClient solr) throws SolrServerException, IOException
+    {
+        for (Documento documento : documentos)
+        {
+            SolrInputDocument solrDoc = new SolrInputDocument();
+            solrDoc.addField("id", documento.getId());
+            solrDoc.addField("author", documento.getAutor());
+            solrDoc.addField("title", documento.getTitulo());
+            solrDoc.addField("content", documento.getContenido());
+            solrDoc.addField("person", documento.getPersona());
+            solrDoc.addField("date", documento.getDate());
+            solrDoc.addField("organization", documento.getOrganization());
+            solrDoc.addField("location", documento.getLocation());
+            solrDoc.addField("money", documento.getMoney());
+
+            // Indexar el documento en Solr
+            solr.add("CORPUS", solrDoc);
+        }
+
+        // Enviar los cambios a Solr
+        solr.commit("CORPUS");
     }
 }

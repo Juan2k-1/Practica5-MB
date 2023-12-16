@@ -34,6 +34,7 @@ public class VistaPrincipal extends javax.swing.JFrame
         jMenuDocumentos = new javax.swing.JMenu();
         jMenuItemIndexar = new javax.swing.JMenuItem();
         jMenuItemMostrarIndexados = new javax.swing.JMenuItem();
+        jMenuItemGate = new javax.swing.JMenuItem();
         jMenuServidorSolr = new javax.swing.JMenu();
         jMenuItemCerrarServidor = new javax.swing.JMenuItem();
         jMenuItemDesconectar = new javax.swing.JMenuItem();
@@ -82,6 +83,10 @@ public class VistaPrincipal extends javax.swing.JFrame
         jMenuItemMostrarIndexados.setText("Mostrar documentos indexados");
         jMenuItemMostrarIndexados.setActionCommand("MostrarDocumentosIndexados");
         jMenuDocumentos.add(jMenuItemMostrarIndexados);
+
+        jMenuItemGate.setText("Indexar documentos GATE");
+        jMenuItemGate.setActionCommand("SeleccionarFicheroGate");
+        jMenuDocumentos.add(jMenuItemGate);
 
         jMenuBarPrincipal.add(jMenuDocumentos);
 
@@ -148,6 +153,7 @@ public class VistaPrincipal extends javax.swing.JFrame
     public javax.swing.JMenuItem jMenuItemCargarFicheroConsultas;
     public javax.swing.JMenuItem jMenuItemCerrarServidor;
     public javax.swing.JMenuItem jMenuItemDesconectar;
+    public javax.swing.JMenuItem jMenuItemGate;
     public javax.swing.JMenuItem jMenuItemGenerarFichero;
     public javax.swing.JMenuItem jMenuItemIndexar;
     public javax.swing.JMenuItem jMenuItemMostrarIndexados;
