@@ -61,7 +61,6 @@ public class ControladorPrincipal implements ActionListener
     private VistaPorDefecto vPorDefecto;
     private VistaPrincipal vPrincipal;
     private VistaIndexarDocumentos vIndexar;
-    //private VistaSeleccionarFichero vSeleccionarFichero;
     private VistaSeleccionarFicheroGate vSeleccionarFicheroGate;
     private VistaMostrarDocumentosIndexados vDocumentosIndexados;
     private VistaCargarFicheroConsultas vCargarFicheroConsulta;
@@ -84,7 +83,6 @@ public class ControladorPrincipal implements ActionListener
         this.vIndexar = new VistaIndexarDocumentos();
         this.vDocumentosIndexados = new VistaMostrarDocumentosIndexados();
         this.vCargarFicheroConsulta = new VistaCargarFicheroConsultas();
-        //this.vSeleccionarFichero = new VistaSeleccionarFichero();
         this.vSeleccionarFicheroGate = new VistaSeleccionarFicheroGate();
         this.vIndexarConsultas = new VistaIndexarConsultas();
         this.vConsultas = new VistaConsultas();
@@ -98,7 +96,6 @@ public class ControladorPrincipal implements ActionListener
 
         this.vPrincipal.add(vPorDefecto);
         this.vPrincipal.add(vIndexar);
-        //this.vPrincipal.add(vSeleccionarFichero);
         this.vPrincipal.add(vSeleccionarFicheroGate);
         this.vPrincipal.add(vDocumentosIndexados);
         this.vPrincipal.add(vConsultas);
@@ -107,7 +104,6 @@ public class ControladorPrincipal implements ActionListener
 
         this.vPorDefecto.setVisible(true);
         this.vIndexar.setVisible(false);
-        //this.vSeleccionarFichero.setVisible(false);
         this.vSeleccionarFicheroGate.setVisible(false);
         this.vDocumentosIndexados.setVisible(false);
         this.vConsultas.setVisible(false);
@@ -132,6 +128,7 @@ public class ControladorPrincipal implements ActionListener
                 this.vPorDefecto.setVisible(false);
                 this.vIndexar.setVisible(false);
                 this.vDocumentosIndexados.setVisible(false);
+                this.vConsultas.setVisible(false);
                 this.vSeleccionarFicheroGate.setVisible(false);
                 this.vIndexar.setVisible(true);
                 break;
@@ -160,6 +157,7 @@ public class ControladorPrincipal implements ActionListener
                 this.vIndexar.setVisible(false);
                 this.vDocumentosIndexados.setVisible(false);
                 this.vSeleccionarFicheroGate.setVisible(false);
+                this.vConsultas.setVisible(false);
                 this.vIndexarConsultas.setVisible(true);
                 break;
             }
@@ -170,6 +168,7 @@ public class ControladorPrincipal implements ActionListener
                 this.vDocumentosIndexados.setVisible(false);
                 this.vSeleccionarFicheroGate.setVisible(false);
                 this.vIndexarConsultas.setVisible(false);
+                this.vConsultas.setVisible(false);
                 this.vCargarFicheroConsulta.setVisible(true);
                 int seleccion = this.vCargarFicheroConsulta.jFileChooserConsultas.showOpenDialog(null);
                 if (seleccion == JFileChooser.APPROVE_OPTION)
@@ -199,7 +198,6 @@ public class ControladorPrincipal implements ActionListener
             {
                 String solrUrl = "http://localhost:8983/solr/" + this.nombreCore;
                 SolrClient solrClientmicoleccion = new HttpSolrClient.Builder(solrUrl).build();
-                //String cisiQueryFilePath = "src\\main\\java\\resources\\CISI.QRY";
                 String cisiQueryFilePath = this.vIndexarConsultas.jTextFieldFichero.getText();
                 String trecTopFilePath = "trec_solr_file.trec";
 
@@ -312,7 +310,6 @@ public class ControladorPrincipal implements ActionListener
                     {
                         try
                         {
-                            //this.documentos = indexarDocumentos(solrClient, cisiAllFilePath);
                             this.documentos = convertToSolrFormat(FilePath);
                             indexToSolr(documentos, solrClient);
                             this.vMensaje.MensajeInformacion("¡Documentos indexados con éxito!");
@@ -363,42 +360,34 @@ public class ControladorPrincipal implements ActionListener
         for (int i = 0; i < results.size(); i++)
         {
             SolrDocument document = results.get(i);
-            Long id = Long.valueOf((String) document.getFieldValue("id"));
-            String author = document.getFieldValue("author").toString();
-            String title = document.getFieldValue("title").toString();
-            //String content = "<html>" + "<body>" + "<p>" + document.getFieldValue("content").toString() + "</p>" + "</body>" + "</html>";
-            String contentHighlight = "<html>" + "<body>" + "<p>" + response.getHighlighting().get(id.toString()).get("content").get(0) + "</p>" + "</body>" + "</html>";
+            Long id = Long.valueOf(document.getFieldValue("id").toString());
+            String author = getFieldAsString(document, "author");
+            String title = getFieldAsString(document, "title");
+            String contentHighlight = getHighlightedContent(response, id);
             Float score = (Float) document.getFieldValue("score");
-            String persona = (String) document.getFieldValue("person");
-            if (persona == null)
-            {
-                persona = " ";
-            }
-            String fecha = (String) document.getFieldValue("date");
-            if (fecha == null)
-            {
-                fecha = " ";
-            }
-            String organizacion = (String) document.getFieldValue("organization");
-            if (organizacion == null)
-            {
-                organizacion = " ";
-            }
-            String localizacion = (String) document.getFieldValue("location");
-            if (localizacion == null)
-            {
-                localizacion = " ";
-            }
-            String dinero = (String) document.getFieldValue("money");
-            if (dinero == null)
-            {
-                dinero = " ";
-            }
+
+            String persona = getFieldAsString(document, "person");
+            String fecha = getFieldAsString(document, "date");
+            String organizacion = getFieldAsString(document, "organization");
+            String localizacion = getFieldAsString(document, "location");
+            String dinero = getFieldAsString(document, "money");
             Documento documento = new Documento(id, author, title, contentHighlight, score, persona, fecha, organizacion, localizacion, dinero);
             documentos.add(documento);
         }
         solrClientmicoleccion.close();
         return documentos;
+    }
+
+    private String getFieldAsString(SolrDocument document, String fieldName)
+    {
+        Object fieldValue = document.getFieldValue(fieldName);
+        return fieldValue != null ? fieldValue.toString() : " ";
+    }
+
+    private String getHighlightedContent(QueryResponse response, Long id)
+    {
+        String highlightedContent = response.getHighlighting().get(id.toString()).get("content").get(0);
+        return "<html><body><p>" + highlightedContent + "</p></body></html>";
     }
 
     private void addListeners()
@@ -462,7 +451,6 @@ public class ControladorPrincipal implements ActionListener
         if (currentQueryId != -1)
         {
             String encodedQuery = URLEncoder.encode(currentQuery.toString().trim(), "UTF-8");
-            //queries.put(currentQueryId, currentQuery.toString().trim());
             encodedQuery = encodedQuery.replace(":", "");
             queries.put(currentQueryId, encodedQuery);
         }
@@ -631,7 +619,7 @@ public class ControladorPrincipal implements ActionListener
             documento.setDate(String.join(", ", dates));
         }
 
-        // Extraer información de dinero
+        // Extraer información del dinero
         List<String> moneys = extractElements(documentNode, "Money");
         if (!moneys.isEmpty())
         {
@@ -734,7 +722,6 @@ public class ControladorPrincipal implements ActionListener
             // Indexar el documento en Solr
             solr.add("CORPUS", solrDoc);
         }
-
         // Enviar los cambios a Solr
         solr.commit("CORPUS");
     }
